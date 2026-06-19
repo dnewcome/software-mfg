@@ -11,7 +11,7 @@ makespan is the cycle time. `sequential_makespan` is the no-overlap baseline —
 the gap between them is the scheduling win.
 """
 
-from collections import defaultdict
+import heapq
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
@@ -60,19 +60,28 @@ class OperationGraph:
         return order
 
 
-def schedule(graph: OperationGraph):
-    """Return (schedule, makespan). schedule[name] = (start, finish, resource)."""
-    res_free = defaultdict(float)
+def schedule(graph: OperationGraph, capacity=None):
+    """Return (schedule, makespan). schedule[name] = (start, finish, resource).
+
+    `capacity` maps resource -> number of parallel servers (e.g. 2 printers);
+    default 1. Each op takes the earliest-free server of its resource.
+    """
+    capacity = capacity or {}
+    servers = {}          # resource -> min-heap of server free-times
     finish = {}
     sched = {}
     for name in graph.topo_order():
         op = graph.ops[name]
+        if op.resource not in servers:
+            servers[op.resource] = [0.0] * capacity.get(op.resource, 1)
+            heapq.heapify(servers[op.resource])
         ready = max((finish[n] for n in op.needs), default=0.0)
-        start = max(ready, res_free[op.resource])
+        free = heapq.heappop(servers[op.resource])     # earliest-free server
+        start = max(ready, free)
         fin = start + op.duration
+        heapq.heappush(servers[op.resource], fin)
         sched[name] = (start, fin, op.resource)
         finish[name] = fin
-        res_free[op.resource] = fin
     makespan = max((f for _, f, _ in sched.values()), default=0.0)
     return sched, makespan
 

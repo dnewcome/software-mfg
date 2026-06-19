@@ -34,15 +34,35 @@ def _cut_action():
     return "wire sheared"
 
 
-def build_job() -> OperationGraph:
-    return OperationGraph([
+def _unit_ops(suffix="", with_actions=True):
+    """One unit's operations. `suffix` makes names unique across pipeline units."""
+    p, e, b, pr, sh, asm = (f"{n}{suffix}" for n in
+                            ("print_bracket", "eject_bracket", "bend_wire",
+                             "present_wire", "shear_wire", "assemble"))
+    return [
         # printer branch (the slow one)
-        Operation("print_bracket", "printer", 40.0),
-        Operation("eject_bracket", "printer", 7.0, needs=("print_bracket",), action=_eject_action),
+        Operation(p, "printer", 40.0),
+        Operation(e, "printer", 7.0, needs=(p,), action=_eject_action if with_actions else None),
         # wire branch — the Phase-3 form -> present -> shear chain
-        Operation("bend_wire", "bender", 8.0),
-        Operation("present_wire", "arm", 3.0, needs=("bend_wire",), tool="shear"),
-        Operation("shear_wire", "arm", 2.0, needs=("present_wire",), tool="shear", action=_cut_action),
+        Operation(b, "bender", 8.0),
+        Operation(pr, "arm", 3.0, needs=(b,), tool="shear"),
+        Operation(sh, "arm", 2.0, needs=(pr,), tool="shear", action=_cut_action if with_actions else None),
         # join: insert the sheared wire into the ejected bracket
-        Operation("assemble", "arm", 5.0, needs=("eject_bracket", "shear_wire")),
-    ])
+        Operation(asm, "arm", 5.0, needs=(e, sh)),
+    ]
+
+
+def build_job() -> OperationGraph:
+    """A single unit (carries the real sim actions)."""
+    return OperationGraph(_unit_ops())
+
+
+def build_pipeline(n_units: int) -> OperationGraph:
+    """N independent units sharing the resources — the production pipeline."""
+    ops = []
+    for i in range(n_units):
+        ops += _unit_ops(suffix=f"_u{i}", with_actions=False)
+    return OperationGraph(ops)
+
+
+PER_UNIT_PRINTER = 47.0   # printer busy-time per unit (print 40 + eject 7) = the bottleneck

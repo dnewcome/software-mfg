@@ -6,7 +6,7 @@
 PY ?= python3
 DISPLAY ?= :0
 
-.PHONY: help sim printer-sim view render check parts cells so101 workcell-check workcell toolchange-check toolchange eject-check eject printer-cell opgraph opgraph-run opgraph-check clean
+.PHONY: help sim printer-sim view render check parts cells so101 workcell-check workcell toolchange-check toolchange eject-check eject printer-cell opgraph opgraph-run opgraph-check pipeline pipeline-check clean
 .DEFAULT_GOAL := help
 
 sim: ## live viewer: the SO-101 ARM scene (needs a display; run via `!`)
@@ -20,7 +20,7 @@ view: sim ## alias for `sim` (the arm)
 render: ## headless: render the scripted SO-101 motion -> exports/renders/ (no display)
 	MUJOCO_GL=osmesa $(PY) scripts/so101_render.py
 
-check: parts cells so101 workcell-check toolchange-check eject-check opgraph-check ## run every validation gate
+check: parts cells so101 workcell-check toolchange-check eject-check opgraph-check pipeline-check ## run every validation gate
 
 parts: ## regenerate + validate local build123d parts -> exports/
 	$(PY) scripts/check_parts.py
@@ -60,6 +60,12 @@ opgraph-run: ## schedule AND execute the real sim actions in order
 
 opgraph-check: ## validate the schedule (precedence, resource limits, overlap win)
 	$(PY) scripts/opgraph_check.py
+
+pipeline: ## multi-unit pipeline: per-unit cycle time + scaling with a 2nd printer
+	$(PY) scripts/pipeline_run.py
+
+pipeline-check: ## validate pipelining amortizes cycle time + parallel machines scale
+	$(PY) scripts/pipeline_check.py
 
 clean: ## remove generated artifacts under exports/ (keeps .gitkeep)
 	find exports -type f ! -name .gitkeep -delete
