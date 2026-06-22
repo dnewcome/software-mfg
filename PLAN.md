@@ -81,6 +81,12 @@ Goal: model the modular end-effector concept and one process tool.
       Maxwell 3-vee / 3-ball pair + central EPM/pogo bore. Watertight, validated.
 - [x] **Self-actuated shear** tool in MJCF (`sim/toolchanger.py`): free body with
       its own hinged blade + position actuator — the arm only positions it.
+- [x] **Physical shear tool CAD** (`parts/shear_{body,blade_arm,cam}.py`): a
+      cam-driven, **self-reacting** bypass shear (fixed jaw + moving blade both on
+      the tool → cut force stays internal, off the arm/coupling), driven by a
+      NEMA17 cam, mounting on the tool-side coupling, with **bought hardened blade
+      inserts** (build/buy: blades+motor=buy, housing/lever/cam=build). v1 geometry,
+      watertight; bypass edge overlap tuned on the bench.
 - [x] **EPM/retention** abstraction: a weld equality toggled via `data.eq_active`,
       welded *in place* (relpose captured at the couple instant → zero snap). Plus
       a **tool rack** cradle, contact-isolated so the tool only touches its rack.
