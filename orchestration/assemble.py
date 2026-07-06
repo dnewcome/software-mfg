@@ -29,6 +29,7 @@ import toolpath as tp  # noqa: E402
 import glue_cell  # noqa: E402
 from workcell import DATUM_POS  # noqa: E402
 from tracking import Pose, load_assembly, verify  # noqa: E402
+from bridge import solve_path as bridge_solve  # noqa: E402
 
 CAPS = {"arm_hold": 1, "arm_glue": 1, "cure": 1}
 CARRY_STEPS = 6           # dead-reckoned moves between observations (pose drifts)
@@ -48,7 +49,7 @@ def plan(program="seam"):
     return OperationGraph(ops), r
 
 
-def run(program="seam", solve=None):
+def run(program="seam"):
     report = {"program": program}
 
     # 1. REFERENCE
@@ -64,10 +65,13 @@ def run(program="seam", solve=None):
     path = tp.bead_toolpath(r["points"], seam_origin, label=f"glue:{program}")
     report["toolpath_points"] = len(path.poses)
 
-    # 4. MOTION — toolpath -> joint waypoints via IK (built-in; Placo pluggable)
-    q_wps, ik_residual_mm = tp.to_joint_traj(path, solve=solve)
-    report["ik_residual_mm"] = round(ik_residual_mm, 2)
-    report["reachable"] = ik_residual_mm < 5.0
+    # 4. MOTION — toolpath -> joint waypoints. The bridge picks the backend: so101-lab
+    #    Placo when its venv+URDF are set up, else the built-in positional IK.
+    motion = bridge_solve(path.poses)
+    report["ik_residual_mm"] = motion["max_err_mm"]
+    report["reachable"] = motion["max_err_mm"] < 5.0
+    report["motion_backend"] = motion["backend"]
+    report["motion_status"] = motion["status"]
 
     # 5. EXECUTE + TRACK — grasp, carry (dead-reckon -> pose drifts), observe, place
     stamps = {}
@@ -98,6 +102,7 @@ if __name__ == "__main__":
     print(f"assemble '{rep['program']}': makespan {rep['makespan_s']}s | "
           f"toolpath {rep['toolpath_points']} pts, IK residual {rep['ik_residual_mm']}mm "
           f"({'reachable' if rep['reachable'] else 'OUT OF REACH'})")
+    print(f"  motion: {rep['motion_backend']} — {rep['motion_status']}")
     for name, s in rep["staleness"].items():
         print(f"  {name}: carry -> {s['before_observe']['verdict']} "
               f"(σ{s['before_observe']['sigma_mm']}mm) -> observe -> {s['after_observe']['verdict']}")

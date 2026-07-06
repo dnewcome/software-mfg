@@ -41,6 +41,7 @@ featuretree/   # feature-IR -> editable FreeCAD/Onshape tree, round-tripped by n
 orchestration/ # op-graph + scheduler + CAM toolpath + end-to-end assemble driver
 calibration/   # the reality leg: calibrated parameter vector + staleness stamp + writeback
 tracking/      # world model: CAD-referenced part-pose tracking + staleness + verify
+bridge/        # compose so101-lab by reference: real Placo motion, built-in IK fallback
 scripts/       # one check_*.py gate + one *_demo.py renderer per cell/subsystem
 exports/       # generated STEP / STL / 3MF + renders (gitignored); cells/ for cell output
 cells.yaml     # external machine cells composed by reference (e.g. ../wirebender)

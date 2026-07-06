@@ -23,3 +23,15 @@ cells:
         module: cad.bend_disc
         builder: bend_disc       # function -> build123d solid
         note: bend-pin disc bolted to the rotating arbor; outer-pin radius + mandrel swept per wire size
+
+  # so101-lab is the HARDWARE / execution cell: real leader/follower arms via lerobot,
+  # plus Placo FK/IK on the SO-101 URDF (its trace_path.py already does
+  # poses -> placo IK -> joints). software-mfg composes it by reference for motion +
+  # live pose; bridge/so101_bridge.py falls back to the built-in IK when the cell's
+  # venv/URDF aren't set up. Set up the cell with `./fetch_urdf.sh` + `uv sync --extra kin`.
+  so101lab:
+    path: ../so101-lab
+    python: .venv/bin/python              # uv-created venv (authoritative for placo/lerobot)
+    urdf: urdf/so101_new_calib.urdf       # from ./fetch_urdf.sh (gitignored in the cell)
+    frame: gripper_frame_link             # the end-effector frame (URDF_TARGET_FRAME)
+    note: real arms + Placo kinematics, composed by reference (read-only, never forked)

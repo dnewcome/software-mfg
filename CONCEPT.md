@@ -276,7 +276,12 @@ sample assembly runs the whole stack (`orchestration/assemble.py`):
 **Repo boundary.** Motion *execution* on the real leader/follower arms lives in the
 `so101-lab` hardware repo (lerobot + Placo); `software-mfg` owns the design-time world
 model, planning, CAM, and verification, and **composes `so101-lab` by reference** (like
-the wire bender) — it consumes live arm pose, it does not fork the driver layer.
+the wire bender) — it consumes live arm pose, it does not fork the driver layer. The
+seam is `bridge/` (declared in `cells.yaml`): it invokes so101-lab's own Placo kinematics
+for motion when the cell's venv+URDF are provisioned, and falls back to the built-in
+positional IK otherwise — reporting which backend is live (LIVE vs SIM), the same honesty
+as the calibration staleness stamp. The residual sim-world ↔ real-arm-base transform is a
+hand-eye/base **calibration** item (identity until measured).
 
 ## 7. Scope boundaries / honesty
 

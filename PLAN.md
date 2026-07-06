@@ -198,8 +198,15 @@ Goal: close the sim-to-real gap on real hardware.
       -> CAM toolpath -> motion (IK) -> track -> verify, as one gated driver.
 - [ ] Real perception: fiducial (AprilTag + CAD transform) then markerless CAD-pose
       (FoundationPose/MegaPose class) as the observation source.
-- [ ] Placo motion backend for orientation-aware toolpath following (nozzle normal to
-      surface); execute on the real leader/follower arms via so101-lab (by reference).
+- [x] **so101-lab bridge** (`bridge/`, `cells.yaml`): compose the hardware cell by
+      reference — invokes so101-lab's own Placo kinematics for motion when its venv+URDF
+      are provisioned, falls back to the built-in IK otherwise, reports LIVE vs SIM.
+- [ ] Provision so101-lab (`./fetch_urdf.sh` + `uv sync --extra kin`) and confirm the
+      bridge flips to LIVE Placo; then execute a toolpath on the real follower.
+- [ ] Placo orientation weight for toolpath following (nozzle normal to surface); the
+      bridge already passes an orientation_weight through to so101-lab's IK.
+- [ ] Hand-eye/base calibration: measure the sim-world ↔ real-arm-base transform
+      (currently identity) and anchor it in the calibration store.
 
 ## Phase 7 — Mobile base & multi-arm (scale breadth)
 
