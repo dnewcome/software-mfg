@@ -168,6 +168,18 @@ Format notes:
   parameters are unanchored and every result reads as a PREDICTION — the calibration
   layer doing its job on a brand-new cell.
 
+## 4a. Process design space
+
+The processes above (and the candidates we keep surveying — pulse/spark forming,
+vaporizing-foil impact welding, cold spray, plasma/PVD deposition, electrophotographic
+powder printing) are mapped and scored in **[PROCESS_SURVEY.md](./PROCESS_SURVEY.md)**.
+The load-bearing principle: this architecture **rewards processes whose geometry is set
+by a digital pattern or a deterministic path** (bitmap-per-layer, toolpath, bend
+program) and **punishes stochastic thermal/plasma parameter soup** (EDM, plasma spray,
+PVD), where the output is an empirical function of a dozen coupled knobs. When a process
+is soup, consume it as a black box or don't use it — don't pretend to software-define
+it. That single test decides build-vs-consume-vs-reject for every process.
+
 ## 5. Hardware concepts
 
 ### 5.1 Manipulator baseline — SO-101

@@ -243,6 +243,20 @@ first-class cells reusing the op-graph + calibration layer:
 - [ ] The replication probe: form a foil tool, use it to form more foil; the op-graph
       tracks tool provenance + calibrated wear state.
 
+### Candidate process cells (from the survey — see PROCESS_SURVEY.md)
+
+- [ ] **`pulse_form` op** (electrohydraulic / electromagnetic): one-shot, die-conforming,
+      springback ≈ 0, gated on a formability / tear limit. The high-rate counterpart to
+      the sequential foil former.
+- [ ] **`fuse_layers` bonding for `foil_lom`** (VFA impact / diffusion / ultrasonic weld):
+      full-density welded stack → retires the delamination gate + the stack anisotropy.
+- [ ] **`deposit` op** (phenomenological): cold-spray / plasma-spray build-up with
+      calibrated rate / porosity / adhesion. Cold spray = dense bulk; plasma/PVD = coatings.
+- [ ] **Electrophotographic powder-sinter cell**: LCD-masked UV → UV-responsive
+      photoconductor (a-Se / ZnO) latent image → charged powder → fuse. Bitmap-per-layer
+      program (shared with MSLA); reuses a resin-printer LCD + a laser-printer drum/corona.
+      Polymer first (cf. Evolve STEP); metal sintering is a stretch.
+
 ## Cross-cutting / ongoing
 
 - [ ] Keep a sim-to-real gap log (predicted vs. measured) per physical milestone.

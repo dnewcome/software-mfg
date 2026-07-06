@@ -9,6 +9,7 @@ design and the process automatically as it solidifies.
 
 - **Vision & architecture:** [CONCEPT.md](./CONCEPT.md)
 - **Roadmap:** [PLAN.md](./PLAN.md)
+- **Process design space (survey):** [PROCESS_SURVEY.md](./PROCESS_SURVEY.md)
 
 ## Core idea
 
