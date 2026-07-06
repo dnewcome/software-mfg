@@ -30,6 +30,56 @@
       "anchored_at_build": 6,
       "provenance": "bend-log 2026-06-14",
       "residual": 0.0
+    },
+    "foil_thickness": {
+      "value": 1.0e-05,
+      "unit": "m",
+      "sigma": 1.0e-06,
+      "op_point": {},
+      "envelope": {},
+      "anchored_at_build": 0,
+      "provenance": "stock spec (household foil ~10um); NOT physically anchored",
+      "residual": 0.0
+    },
+    "foil_springback_deg": {
+      "value": 4.0,
+      "unit": "deg",
+      "sigma": 1.5,
+      "op_point": {"bend_deg": 90, "r_over_t": 3},
+      "envelope": {"bend_deg": [30, 150], "r_over_t": [1, 8]},
+      "anchored_at_build": 0,
+      "provenance": "estimated from Sitaker foil notes; NOT physically anchored",
+      "residual": 0.0
+    },
+    "foil_workharden_gain": {
+      "value": 0.35,
+      "unit": "per-reversal",
+      "sigma": 0.15,
+      "op_point": {"reversals": 0},
+      "envelope": {"reversals": [0, 3]},
+      "anchored_at_build": 0,
+      "provenance": "estimated (foil work-hardens rapidly on bending); NOT anchored",
+      "residual": 0.0
+    },
+    "foil_crack_bends": {
+      "value": 4,
+      "unit": "reversals",
+      "sigma": 1.0,
+      "op_point": {},
+      "envelope": {},
+      "anchored_at_build": 0,
+      "provenance": "estimated crease-fatigue limit; NOT anchored",
+      "residual": 0.0
+    },
+    "foil_bond_shear_mpa": {
+      "value": 8.0,
+      "unit": "MPa",
+      "sigma": 4.0,
+      "op_point": {},
+      "envelope": {},
+      "anchored_at_build": 0,
+      "provenance": "estimated adhesive (borax/boric-acid) lamination bond; ultrasonic is higher; NOT anchored",
+      "residual": 0.0
     }
   }
 }

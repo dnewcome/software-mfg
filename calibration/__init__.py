@@ -15,10 +15,13 @@ from .store import (
     STALE,
     CalibrationStore,
     Parameter,
+    default_store_path,
+    param,
     staleness,
 )
 
 __all__ = [
     "CalibrationStore", "Parameter", "staleness", "FRESH", "STALE", "EXTRAPOLATING",
+    "param", "default_store_path",
     "Measurement", "ParamDiff", "ingest", "apply",
 ]

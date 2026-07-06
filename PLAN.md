@@ -182,10 +182,14 @@ Goal: the design/process improves as it solidifies.
 
 Goal: close the sim-to-real gap on real hardware.
 
+- [x] **Calibration layer** (`calibration/`): the mechanism for "feed corrections
+      back into the simulator" — calibrated parameter vector as the source of truth,
+      measurement ingest as a reviewable diff, and a staleness stamp (FRESH / STALE /
+      EXTRAPOLATING) that gates trust. The sim is a cache of reality; this invalidates it.
 - [ ] Physical SO-101 + printed kinematic coupling + shear tool.
 - [ ] Heat-set-insert workflow (incremental assembly) — human-assisted.
-- [ ] Measure real seating repeatability & cut accuracy vs. sim; feed corrections
-      back into the simulator.
+- [ ] Measure real seating repeatability & cut accuracy vs. sim; ingest via the
+      calibration layer (press force/seat depth already have anchored parameters).
 - [ ] Validate one consolidated design against its multi-part predecessor.
 
 ## Phase 7 — Mobile base & multi-arm (scale breadth)
@@ -210,6 +214,34 @@ process under product + supply variation" (CONCEPT.md §1a).
       re-tool / re-source automatically; measure replan latency + cost delta.
 - [ ] Cost/lead-time/risk as first-class objectives alongside cycle time
       (multi-objective scheduling).
+
+## Phase 9 — Foil processes (matter from cheap ubiquitous stock)
+
+Goal: make parts from common aluminum foil — the ultimate compose-don't-fork feedstock
+(<50¢/m², everywhere) — and probe the "machines that make machines" loop (foil tools
+forming more foil). Sparked by Sitaker's aluminum-foil notes. Two archetypes, both as
+first-class cells reusing the op-graph + calibration layer:
+
+- [x] **Foil former** (`sim/foil_former.py`): a CNC foil bender — the wire bender lifted
+      one dimension. A (feed, bend) program folds flat stock into a stiff profile
+      (channel, corrugation); stiffness is geometric (foil has ~no bending stiffness).
+      Calibrated springback + work-hardening (overbend to hit target; creases crack
+      after N reversals). `make foil-former` renders it.
+- [x] **Foil LOM** (`sim/foil_lom.py`): a layer-forming 3D printer — slice a solid into
+      ~10µm foil layers, bond + cut each, stack. Surfaces the thin-foil reality (800
+      layers for an 8 mm part, ~1.5 h) and schedules the per-layer op-graph. Delamination
+      gated by the calibrated bond strength.
+- [x] Foil parameters seeded in the store, deliberately UNANCHORED — every foil result
+      reads as a PREDICTION until a physical former is built and measured (the calibration
+      layer doing its job on a brand-new, unbuilt cell).
+- [ ] Anchor foil parameters against a real bench former (springback per roll/temper;
+      crease crack limit; bond shear for adhesive vs. ultrasonic).
+- [ ] Single-point incremental forming (SPIF) head = the press cell's C-frame with a
+      stylus tip, scanned in XY by the arm (self-reacting, so the arm doesn't fight it).
+- [ ] Feature-IR → foil-LOM slice stack (consume a sliced build123d/STL part, not just
+      analytic solids-of-revolution); crease-pattern IR dialect (origami as code).
+- [ ] The replication probe: form a foil tool, use it to form more foil; the op-graph
+      tracks tool provenance + calibrated wear state.
 
 ## Cross-cutting / ongoing
 

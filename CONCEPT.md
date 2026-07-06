@@ -149,6 +149,25 @@ Format notes:
   cooldown with the next print). Control-side caution: Bambu's Jan-2025 firmware
   added LAN auth — third-party control needs Developer/LAN mode enabled.
 
+- **The sim is a cache of reality (`calibration/`).** Sim-CI tests a model but ships
+  a physical part, so a green sim only counts where its parameters are anchored to
+  reality. The calibrated parameter vector (value + σ + operating point + envelope +
+  which build last confirmed it) is the real source of truth; sims read it,
+  measurements write it back as a reviewable diff, and every result carries a
+  staleness stamp — FRESH / STALE / EXTRAPOLATING — counted in builds-since-anchor.
+  This is grey-box system ID, not reverse-engineering: we keep the causal structure
+  and fit the parameters.
+
+- **Foil as feedstock (`sim/foil_former.py`, `sim/foil_lom.py`).** Common aluminum
+  foil is the ultimate compose-don't-fork stock (<50¢/m², ubiquitous) and a probe of
+  the machines-making-machines loop. Two cells: a *foil former* (the wire bender lifted
+  a dimension — a (feed, bend) program folds flat stock into geometrically-stiff
+  profiles, with calibrated springback + work-hardening) and a *foil LOM printer*
+  (slice a solid into ~10µm layers, bond + cut + stack — thin foil means thousands of
+  layers, which the planner reports honestly). No physical former exists yet, so their
+  parameters are unanchored and every result reads as a PREDICTION — the calibration
+  layer doing its job on a brand-new cell.
+
 ## 5. Hardware concepts
 
 ### 5.1 Manipulator baseline — SO-101

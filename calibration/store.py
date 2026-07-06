@@ -78,6 +78,21 @@ class CalibrationStore:
         return p.value if p is not None else default
 
 
+def default_store_path() -> Path:
+    """The package's own store.json — the one CAD/sim consume by default."""
+    return Path(__file__).resolve().parent / "store.json"
+
+
+def param(name: str, default=None):
+    """Convenience for sims: the calibrated value of `name` from the default store,
+    or `default` if the store or key is absent (so a cell still runs before its
+    parameters are anchored — the staleness stamp is what says not to trust it)."""
+    try:
+        return CalibrationStore.load(default_store_path()).value(name, default)
+    except Exception:
+        return default
+
+
 def _envelope_distance(param: Parameter, op_point: dict):
     """Fraction of the envelope width the op_point sits OUTSIDE the trusted range.
     0.0 = inside (interpolating); >0 = extrapolating. Worst (max) over declared
