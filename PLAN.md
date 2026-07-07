@@ -351,6 +351,44 @@ line**; the hard question is when it must, and what it may do on its own before 
 - [ ] Ethics/reasonableness constraints as explicit, reviewable rules — not emergent;
       the policy is code + config in the ledger, versioned and diffable like everything else.
 
+## Phase 12 — Robot affordances (design-for-robotic-assembly)
+
+Goal: **design the world to fit the robot**, not just the robot to fit the world. Tasks
+humans find trivial (plugging in a power plug, seating a connector, threading a screw
+start) are hard for arms because they demand sub-mm blind precision. An **affordance** is
+a physical feature added to a part/fixture/tool that *widens the success envelope* so a
+coarse, slightly-stale pose still lands the op. This is the mechanical dual of the
+calibration layer: instead of tightening the estimate, loosen the requirement. Sibling of
+Phase 5 (generative DFM) — DFM makes a part *manufacturable*; this makes it *assemblable
+by a robot*. Every affordance is a parametric build123d feature + a quantified envelope.
+
+- [ ] **Affordance feature library** (parametric, build123d / feature-IR):
+      - insertion **lead-in / chamfer** (the universal one) + **capture cone / funnel**
+        (self-centering — the power-plug / connector case);
+      - **kinematic self-seating** (vee/cone/3-2-1 locators, like the tool coupling) so a
+        dropped part settles into a unique pose;
+      - **compliance / remote-center-compliance (RCC)** on the tool or fixture side to
+        absorb residual misalignment during insertion;
+      - **grip/pick affordances** (flats, tabs, suction targets, finger keep-outs);
+      - **fiducial / pose-target bosses** (feed the CV `observe()` a reliable pose);
+      - **keying / poka-yoke** (asymmetry that forbids the wrong orientation);
+      - **pre-pose nests** in the staging area (Phase 7) that hold a part in a known pose
+        before pick.
+- [ ] **Capture-envelope model** (`sim/affordance.py`): each affordance exposes a
+      **capture radius** (max lateral + angular offset it still funnels home) from its
+      geometry — e.g. chamfer width + half-clearance (+ compliance travel for RCC). Analytic
+      + calibratable, seeded UNANCHORED (a PREDICTION until measured), like the foil params.
+- [ ] **The acceptance gate = capture radius vs. required precision.** An insertion op is
+      robot-safe iff `capture_radius ≥ margin · (pose σ ⊕ arm accuracy)` — the same
+      "green means in-tolerance WITH MARGIN" rule the calibration store uses, now on
+      assembly geometry. Reuses `insert_toolpath` + pose staleness (`tracking/`) +
+      interference clearance. Worked example: the power-plug insertion — funnel + chamfered
+      pins + RCC turns a sub-mm blind mate into a tolerant one; report the capture radius
+      the affordance buys and how much pose staleness it absorbs.
+- [ ] **Affordance-insertion analyzer**: given an op that's marginal (capture radius <
+      margin · σ), propose the smallest affordance that makes it pass, on the part vs. the
+      fixture vs. the tool, and quantify the tolerance gain — an automated DFRA pass.
+
 ## Cross-cutting / ongoing
 
 - [ ] Keep a sim-to-real gap log (predicted vs. measured) per physical milestone.
