@@ -228,8 +228,19 @@ Goal: close the sim-to-real gap on real hardware.
       envelope; `reachable` is the envelope test. Base pose goes STALE by odometry drift
       and re-anchors on a floor fiducial (`fix`) — the calibration staleness discipline on
       the floor frame.
+- [x] **Mobile-base design + physics** (`sim/mobile_base.py`, `scripts/mobile_base_check.py`,
+      `parts/base_deck.py`, `MOBILE_BASE.md`): analytical model of hold force when LOCKED —
+      the real limit is min(back-drive, slide, **tip-over**); tip-over (footprint + CG) binds,
+      not the motors. Four designs scored on the SO-101 printer-pick: diff2 (simplest, ✅),
+      passive mecanum (❌ — free rollers give ~5 N lateral hold), **omni_diff** (active
+      differentially-driven rollers, ✅ holonomic + locks laterally), footed4 (✅ rigid feet).
+      Motor spec (NEMA-17 + 5:1, gear so motors aren't the weak link), BOM + sources, and a
+      bench-pull-test plan that anchors μ/holding (PREDICTION → measured). CAD deck plate
+      builds watertight. **Near-term milestone: build one, verify the arm extracts a part
+      from a floor-standing printer.**
 - [ ] Realize the floor in MuJoCo (planar/free base joint) + coarse-by-base / fine-by-datum
-      control; today `station.py` is the geometric floor planner (poses + footprints).
+      control; today `station.py` is the geometric floor planner, `mobile_base.py` the
+      statics; a MuJoCo model would add dynamics (accel tip-over, roller slip).
 - [ ] Fiducial-based local relocalization for fine ops after base moves (the real
       observation source behind `Floor.fix`).
 - [ ] Schedule station moves as op-graph resources (a floor "lane" / dock as a resource);
