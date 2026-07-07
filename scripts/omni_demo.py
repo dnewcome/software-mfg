@@ -24,18 +24,17 @@ def main():
     hub = trimesh.load(str(BUILD / "omni_hub.stl"))
     roller = trimesh.load(str(BUILD / "omni_roller.stl"))
     parts = [hub]
-    for i in range(o.N_ROLLERS):
-        r = roller.copy(); r.apply_transform(roller_xform(i)); parts.append(r)
-        (cx, cy), _, deg = o.roller_center(i)                       # the metal pin
-        pin = trimesh.creation.cylinder(radius=o.PIN_D / 2, height=2 * o.HALF_L + 6)
-        pin.apply_transform(trimesh.transformations.translation_matrix([cx, cy, 0])
-                            @ trimesh.transformations.rotation_matrix(np.radians(deg), [0, 0, 1])
-                            @ trimesh.transformations.rotation_matrix(np.radians(90), [1, 0, 0]))
-        parts.append(pin)
+    for row in range(o.ROWS):
+        for i in range(o.N_ROLLERS):
+            T = roller_xform(i, row)
+            r = roller.copy(); r.apply_transform(T); parts.append(r)
+            pin = trimesh.creation.cylinder(radius=o.PIN_D / 2, height=2 * o.HALF_L + 6)  # metal pin
+            pin.apply_transform(T)
+            parts.append(pin)
     asm = trimesh.util.concatenate(parts)
     out = BUILD / "omni_assembly.stl"
     asm.export(str(out))
-    print(f"omni_assembly -> {out}  OD {2*o.R_EFF:.0f}mm, {o.N_ROLLERS} rollers + pins, "
+    print(f"omni_assembly -> {out}  OD {2*o.R_EFF:.0f}mm, {o.ROWS}x{o.N_ROLLERS} rollers + pins, "
           f"bbox {(asm.bounds[1]-asm.bounds[0]).round(1).tolist()}")
 
 

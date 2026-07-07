@@ -1,24 +1,28 @@
 """_omni.py — shared parametric geometry for the reverse-engineered omni wheel.
 
-Grey-box reverse engineering (not tracing): the STRUCTURE is known — an omni wheel is N
-barrel rollers on tangent axes, each roller's outer surface lying on the wheel's pitch
-circle (radius R_EFF) so the barrels blend into a continuous round OD. MEASURE your physical
-wheel and set R_EFF / N_ROLLERS / MOUNT_R / bores; every other dimension derives from the
-constraint. The key identity:
+Grey-box reverse engineering (not tracing): the STRUCTURE is known — an omni wheel is barrel
+rollers on tangent axes, each roller's outer surface lying on the wheel's pitch circle
+(radius R_EFF) so the barrels blend into a round OD. MEASURE your wheel and set R_EFF /
+N_ROLLERS / MOUNT_R; the rest derives. Key identities:
 
     rho(z) = R_EFF - hypot(MOUNT_R, z)      # barrel radius keeps the surface on the OD circle
-    HALF_L = MOUNT_R * tan(pi / N_ROLLERS)  # half roller length so adjacent rollers just meet
+    HALF_L = MOUNT_R * tan(pi/N) - gap/2    # roller half-length (with a gap for the hub)
+
+**Continuity fix:** a single row of rollers with gaps drops into a gap each turn — it bumps,
+it doesn't roll. So the wheel is TWO staggered rows (a "double omni wheel"): row 2 is rotated
+half a pitch, so its rollers sit over row 1's gaps. Contact is continuous iff each roller's
+angular coverage half-angle >= 90/N degrees (see continuity()).
 """
 import math
 
 R_EFF = 30.0        # wheel effective radius (mm) -> 60 mm OD.        MEASURE
-N_ROLLERS = 5       # roller count — count them on the real wheel.    MEASURE
-MOUNT_R = 21.0      # roller-axis distance from wheel centre (pitch). MEASURE
-#                     (21 with N=5 -> 18mm barrels that don't self-overlap; verified by interference)
+N_ROLLERS = 5       # rollers PER ROW — count them on the real wheel. MEASURE
+MOUNT_R = 22.0      # roller-axis distance from wheel centre (pitch). MEASURE
 PIN_D = 3.0         # axle pin (3 mm dowel / M3)
 ROLLER_BORE = 3.4   # roller spins on the pin -> bore > pin
 ROLLER_SAMPLES = 28
-ROLLER_GAP_MM = 10.0  # tangential gap between adjacent rollers -> room for the hub + spin clearance
+ROLLER_GAP_MM = 10.0  # tangential gap between rollers in a row -> room for the hub + spin clearance
+ROWS = 2              # two axially-offset, half-pitch-staggered rows -> continuous contact
 
 # drive interface to the STS3215 horn (same approach as parts/base_wheel.py) — MEASURE horn
 HUB_BORE = 8.5
@@ -27,9 +31,11 @@ HORN_N = 4
 HORN_SCREW = 2.7
 
 FULL_HALF_L = MOUNT_R * math.tan(math.pi / N_ROLLERS)     # where rollers would just meet
-HALF_L = FULL_HALF_L - ROLLER_GAP_MM / 2                  # shortened -> a gap for the arm
+HALF_L = FULL_HALF_L - ROLLER_GAP_MM / 2                  # shortened -> a gap for the hub
 BARREL_MAX = R_EFF - MOUNT_R                              # barrel radius at its centre
 END_R = R_EFF - math.hypot(MOUNT_R, HALF_L)              # barrel radius at the (shortened) ends
+ROW_STAGGER = 180.0 / N_ROLLERS                          # deg: row-2 rotated half a pitch
+ROW_Z = BARREL_MAX + 1.0                                 # axial half-separation of the two rows
 
 
 def rho(z):
@@ -37,12 +43,26 @@ def rho(z):
     return R_EFF - math.hypot(MOUNT_R, z)
 
 
-def roller_center(i):
-    """(x, y) of roller i's centre in the wheel plane, and its tangent-axis unit vector."""
-    a = 2 * math.pi * i / N_ROLLERS
-    c = (MOUNT_R * math.cos(a), MOUNT_R * math.sin(a))
-    tangent = (-math.sin(a), math.cos(a))
-    return c, tangent, math.degrees(a)
+def roller_center(i, row=0):
+    """((x, y, z), angle_deg) of roller i in `row`. Row 1 is staggered half a pitch and offset
+    axially so its rollers cover row 0's gaps."""
+    a = 2 * math.pi * i / N_ROLLERS + (math.radians(ROW_STAGGER) if row else 0.0)
+    z = ROW_Z if row else -ROW_Z
+    return (MOUNT_R * math.cos(a), MOUNT_R * math.sin(a), z), math.degrees(a)
+
+
+def coverage_half_deg():
+    """Half the azimuth a single roller keeps at the OD (its surface sits on R_EFF out to ±HALF_L)."""
+    return math.degrees(math.atan(HALF_L / MOUNT_R))
+
+
+def continuity():
+    """Two staggered rows -> combined rollers every 180/N deg, each covering ±coverage. Contact
+    is continuous iff coverage >= 90/N (adjacent arcs meet)."""
+    need = 90.0 / N_ROLLERS
+    cov = coverage_half_deg()
+    return {"coverage_deg": round(cov, 1), "need_deg": round(need, 1),
+            "continuous": cov >= need, "margin": round(cov / need, 2)}
 
 
 def validity():
@@ -53,4 +73,6 @@ def validity():
         w.append("barrel ends too thin for the bore (raise R_EFF or MOUNT_R)")
     if BARREL_MAX <= 2:
         w.append("barrel too shallow (rollers won't contact ground)")
+    if not continuity()["continuous"]:
+        w.append(f"contact not continuous: coverage {coverage_half_deg():.1f} < {90/N_ROLLERS:.1f} deg")
     return w

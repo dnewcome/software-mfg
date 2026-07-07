@@ -1,11 +1,10 @@
-"""omni_hub.py — the omni-wheel hub/frame that holds the barrel rollers.
+"""omni_hub.py — the omni-wheel hub/frame that holds the barrel rollers (TWO staggered rows).
    py cad -> build/omni_hub.stl
 
-Carve-out design: start from a solid blank and SUBTRACT each roller's envelope (the barrel
-dilated by a spin clearance), so the rollers are guaranteed to spin free — the pockets are
-the rollers plus clearance, by construction. What remains between pockets holds the
-off-the-shelf metal pins (tangent, through both flanks of each pocket). Central bore + horn
-mount drive it. Reverse-engineered from _omni.py — MEASURE your wheel and set the params.
+Carve-out design: start from a solid blank and SUBTRACT each roller's envelope (barrel + spin
+clearance), for all 2*N rollers across both rows, so the rollers spin free by construction.
+What remains between pockets holds the off-the-shelf metal pins (tangent, one per roller).
+Central bore + horn mount drive it. Reverse-engineered from _omni.py — MEASURE + set params.
 """
 import math
 import os
@@ -16,11 +15,11 @@ from build123d import *
 
 sys.path.insert(0, os.path.dirname(__file__))
 from _omni import (BARREL_MAX, HALF_L, HORN_BC_D, HORN_N, HORN_SCREW, HUB_BORE,  # noqa: E402
-                   MOUNT_R, N_ROLLERS, PIN_D, ROLLER_SAMPLES, rho, roller_center)
+                   MOUNT_R, N_ROLLERS, PIN_D, ROLLER_SAMPLES, ROW_Z, ROWS, rho, roller_center)
 
-CLR = 1.0                             # roller spin clearance (pocket = barrel + CLR)
-CLEAR_R = MOUNT_R + 3.0               # blank radius: holds pins, stays inside the roller OD
-FRAME_H = 2 * BARREL_MAX + 4          # Z height: encloses the roller barrels
+CLR = 1.0                                  # roller spin clearance (pocket = barrel + CLR)
+CLEAR_R = MOUNT_R + 3.0                     # blank radius: holds pins, stays inside the roller OD
+FRAME_H = 2 * (ROW_Z + BARREL_MAX) + 4      # Z height: spans both rows of barrels
 
 
 def _envelope_roller(clr=CLR):
@@ -41,19 +40,21 @@ def _envelope_roller(clr=CLR):
 def _build():
     hub = Cylinder(CLEAR_R, FRAME_H)                   # solid blank, axis Z
     cutter = _envelope_roller()
-    for i in range(N_ROLLERS):
-        (cx, cy), _, deg = roller_center(i)
-        hub -= Pos(cx, cy, 0) * Rot(0, 0, deg) * Rot(90, 0, 0) * cutter   # carve the pocket
+    for row in range(ROWS):
+        for i in range(N_ROLLERS):
+            (cx, cy, cz), deg = roller_center(i, row)
+            hub -= Pos(cx, cy, cz) * Rot(0, 0, deg) * Rot(90, 0, 0) * cutter   # carve pocket
 
     hub -= Cylinder(HUB_BORE / 2, FRAME_H + 2)         # drive bore
-    for i in range(HORN_N):                            # horn bolt circle
-        a = 2 * math.pi * i / HORN_N
+    for k in range(HORN_N):                            # horn bolt circle
+        a = 2 * math.pi * k / HORN_N
         hub -= Pos((HORN_BC_D / 2) * math.cos(a), (HORN_BC_D / 2) * math.sin(a), 0) * \
             Cylinder(HORN_SCREW / 2, FRAME_H + 2)
-    for i in range(N_ROLLERS):                         # tangent pin hole per roller
-        (cx, cy), _, deg = roller_center(i)
-        hub -= Pos(cx, cy, 0) * Rot(0, 0, deg) * Rot(90, 0, 0) * \
-            Cylinder(PIN_D / 2, 2 * (HALF_L + 8))
+    for row in range(ROWS):                            # a tangent pin hole per roller
+        for i in range(N_ROLLERS):
+            (cx, cy, cz), deg = roller_center(i, row)
+            hub -= Pos(cx, cy, cz) * Rot(0, 0, deg) * Rot(90, 0, 0) * \
+                Cylinder(PIN_D / 2, 2 * (HALF_L + 8))
     return hub
 
 
