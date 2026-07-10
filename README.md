@@ -20,7 +20,7 @@ Three coupled loops, each keeping the next honest:
 
 1. **Design round-trip** — a part is a declarative feature-IR that emits an
    *editable* FreeCAD/Onshape tree and folds human edits back by feature name
-   (`featuretree/`). Not a dead STEP hand-off.
+   (the `../featuretree` cell, composed by reference). Not a dead STEP hand-off.
 2. **Sim-CI** — design → simulate (MuJoCo) → verdict. Fast, cheap, repeatable;
    ~95% of the iteration happens here. Every `*-check` gate is one test.
 3. **Reality calibration** — a physical build measures what the sim got wrong and
@@ -42,7 +42,8 @@ assemblies/    # partcad assemblies-as-code (composition + positions)
 sim/           # cells: workcell, printer, wirebender, press, toolchanger, SO-101, foil former + LOM
                #   + interference.py: solid part interference / swept-collision checking
                #   + station.py: material-handling floor (mobile carriers, routing, work envelope)
-featuretree/   # feature-IR -> editable FreeCAD/Onshape tree, round-tripped by name
+               #   the feature-IR design cell lives in the ../featuretree SIBLING repo
+               #   (composed by reference via cells.yaml; scripts/freecad_*.py drive it)
 orchestration/ # op-graph + scheduler + CAM toolpath (bead/insert/pick-place) + assemble driver
 calibration/   # the reality leg: calibrated parameter vector + staleness stamp + writeback
 tracking/      # world model: CAD-referenced part-pose tracking + staleness + verify

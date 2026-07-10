@@ -122,7 +122,7 @@ Format notes:
   (swept `PIN_OFFSET` / `MANDREL_D`) is already a partcad-shaped problem. It is
   the *intended* registry layer; standing up its sandboxed runtime is deferred
   (see PLAN.md). Until then, cells are composed by the lightweight bridge below.
-- **Operation round-trip / human editing (`featuretree/`).** No neutral *file*
+- **Operation round-trip / human editing (the `../featuretree` cell, by reference).** No neutral *file*
   preserves a feature tree across tools (topological naming + no shared op
   ontology), so we keep a neutral **feature IR (DSL)** and emit it into each
   tool's native tree. FreeCAD is the first backend (its own `freecadcmd` → a real

@@ -7,7 +7,7 @@ green sim has drifted out of trust.
 
 Three loops run in this project; this one keeps the other two honest:
 
-1. **design round-trip** — declarative source ↔ editable representation (`featuretree/`)
+1. **design round-trip** — declarative source ↔ editable representation (the `../featuretree` cell)
 2. **sim-CI** — design → simulate → verdict (the `*-check` gates); fast, cheap, but validates a *model*
 3. **reality calibration** — physical build → measurement → parameter update (**here**)
 

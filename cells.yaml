@@ -14,6 +14,16 @@
 # then re-imports the STEP under software-mfg's own build123d as an integrity gate.
 
 cells:
+  # featuretree is the DESIGN cell: the neutral feature-IR (a small CAD DSL) + per-target
+  # emitters (FreeCAD now, Onshape too) that render it as an editable feature tree. Unlike a
+  # part cell it emits no geometry via sync_cells.py — software-mfg imports its `ir` directly
+  # (scripts/ir_local.py adds this project's coupling_plate sample) and runs its fc_build.py /
+  # fc_read.py under FreeCAD's own interpreter (scripts/freecad_cmd.py). Composed by reference,
+  # never forked — clone it beside this repo: git clone git@github.com:dnewcome/featuretree.git
+  featuretree:
+    path: ../featuretree         # sibling repo: the feature-IR round-trip library (design cell)
+    note: IR -> editable FreeCAD/Onshape tree -> human edit -> back into the IR, matched by name
+
   wirebender:
     path: ../wirebender          # sibling repo: the wire-bender cell (CAD + MuJoCo sim + slicer)
     python: py/bin/python        # the cell's own venv interpreter (authoritative)
