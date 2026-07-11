@@ -49,7 +49,7 @@ Two of the three models are now the XRP wheel (a **functional** parametric assem
 | # | model | files | rollers / OD | relation to the XRP wheel |
 |---|-------|-------|--------------|---------------------------|
 | 1 | **parametric omni** (functional) | `parts/_omni.py` + `omni_hub.py` + `omni_roller.py` | **2×4 = 8, OD 70** | **the XRP wheel**, grey-box parametric: real barrel-roller + carve-out hub STLs that assemble, spin free, and are gated by `make omni-check`. Retargeted from the earlier OD60/10-roller photo wheel. |
-| 2 | **`kiwi_wheel` (IR)** | `scripts/ir_local.py:kiwi_wheel` → `exports/freecad/kiwi_wheel.FCStd` | **2×4 = 8, OD 68** | **the XRP wheel**, authored as featuretree IR + an STS3215 servo mount — a solid-envelope editable FreeCAD tree (no discrete rollers). |
+| 2 | **`kiwi_wheel` (IR)** | `scripts/ir_local.py:kiwi_wheel` → `exports/freecad/kiwi_wheel.FCStd` | **2×4 = 8, OD 70** | **the XRP wheel** on the SAME integer design as #1 (OD 70, MOUNT_R 25, Ø20 rollers) — a solid-envelope editable FreeCAD tree + STS3215 mount (no discrete rollers). |
 | 3 | **`base_wheel`** | `parts/base_wheel.py` | solid tire, no rollers | a **from-scratch** diff-drive drive wheel — not omni. |
 
 **The XRP wheel's design closes on clean integers** (#1): a **Ø70 wheel arc** (R_EFF 35) with **Ø20
@@ -77,12 +77,14 @@ Reverse-engineering the XRP wheel is what forced these featuretree features into
 - **geometric continuity** (`scripts/omni_check.py`) — measure OD coverage on the assembled wheel
   instead of the fragile analytic proxy.
 
-## 5. Open decisions
+## 5. Status (2026-07-11)
 
-- **#1 (functional) vs #2 (IR)**: both are now the XRP wheel — #1 is the *printable, spins-free*
-  parametric assembly (the real deliverable), #2 is an *editable FreeCAD tree* with the servo mount.
-  Keep both, or fold the servo mount from #2 into #1's hub.
-- **Width**: #1 builds 46 mm wide vs the real ≈ 39. The real wheel nests the two roller rows more
-  tightly (`ROW_Z`); tightening it risks roller interference — tune if the exact width matters.
-- **`kiwi_wheel` (#2) fidelity**: still OD 68 (envelope) vs the Ø70 arc; update its profile + roller
-  ring to the integer design if you want it to match #1 exactly.
+- **#1 (functional) and #2 (IR)** are now the SAME XRP wheel — both OD 70, MOUNT_R 25, Ø20 rollers,
+  2×4 staggered, **40 mm roller width + an 8 mm STS3215 standoff boss = 48 mm**. #1 has real
+  spinning rollers + carve-out hub; #2 is the editable FreeCAD-tree envelope. Both carry the servo
+  mount (horn recess + Ø14/4×M3 bolt circle + back-access counterbore).
+- **Width**: nested to 40 mm (rollers) via `ROW_SEP_HALF=9.5`, still 0 interference / continuous.
+- **FreeCAD visibility**: featuretree's `fc_build.py` now injects a `GuiDocument.xml` into each
+  `.FCStd` (freecadcmd writes none), so files open with the solid visible instead of all-hidden.
+- **Remaining gap**: #2 is still a *solid* approximation (no hollow spoked interior / discrete
+  rollers) — inherent to the IR. #1 is the printable, functional wheel.

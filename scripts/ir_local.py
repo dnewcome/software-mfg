@@ -48,22 +48,18 @@ def coupling_plate():
 
 
 def kiwi_wheel():
-    """The kiwi-v10 omni wheel, measured off its STEP: a body-of-revolution disc (OD 68 / r34 for
-    axial -19.5..+8, stepping to a Ø12 hub boss, ~Ø2 shaft hole) with two staggered rings of roller
-    POCKETS cut into the rim — 4 tangent bores per ring, ring 2 rotated half a pitch (45deg), at the
-    measured pin pitch (mount_r 30). This is the swept form PLUS the roller cutouts, as an editable
-    feature tree (Sketch -> Revolution -> two PolarPocket rings).
+    """The XRP omni wheel as an editable FreeCAD tree, on the SAME integer design as the functional
+    parametric wheel (parts/_omni.py): a Ø70 wheel arc (R_EFF 35) with Ø20 barrel rollers at pitch
+    MOUNT_R 25, 4/row × 2 rings staggered 45deg. Here it's the solid-envelope form: a 40 mm-wide
+    disc (OD 70) + roller-cavity pockets + the STS3215 servo mount, revolved and polar-cut.
 
-    Fidelity notes: the pockets are placed at z=-12/-1 (inside the disc) rather than the exact pin
-    rows (-15/+4) — those straddle the hub-boss step and fragment the solid; nudging them in keeps a
-    single watertight solid. Still the solid shell (~88k mm^3), not the fully-hollow real wheel
-    (~43k). OD 68 / width 39 / 8 staggered roller pockets match.
+    Tree: Sketch -> Revolution -> two PolarPocket rings -> horn recess / hub bore / back-access /
+    bolt circle. It's a SOLID approximation (no discrete rollers, no hollow spoked interior); what
+    matches _omni exactly: OD 70, MOUNT_R 25, Ø20 rollers, 8 staggered pockets, the servo interface.
     """
-    # Revolve profile (radius, axial) with a servo-side STANDOFF BOSS: the Ø22 boss (z=-27.5..-19.5)
-    # sticks out toward the servo so the roller disc (z=-19.5..+8) clears the STS3215 body; the horn
-    # seats in the boss end. Disc OD 68. (Servo-drive variant: the original outboard Ø12 hub is
-    # replaced by a back-access bore.)
-    profile = [(1.1, -27.5), (11.0, -27.5), (11.0, -19.5), (34.0, -19.5), (34.0, 8.0), (1.1, 8.0)]
+    # Revolve profile (radius, axial): a Ø22 servo-side standoff boss (z=-28..-20) so the roller disc
+    # (OD 70, z=-20..+20) clears the STS3215 body; the horn seats in the boss end.
+    profile = [(1.1, -28.0), (11.0, -28.0), (11.0, -20.0), (35.0, -20.0), (35.0, 20.0), (1.1, 20.0)]
     # STS3215 horn bolt circle (ST-3215-C047): Ø14 BCD, 4× M3 clearance (Ø3.4).
     bcr = 7.0
     bolts = [(round(bcr * math.cos(math.radians(a)), 4), round(bcr * math.sin(math.radians(a)), 4))
@@ -72,17 +68,17 @@ def kiwi_wheel():
         "kiwi_wheel",
         IR.sketch("section", "XZ", polys=[profile]),
         IR.revolve("body", "section", angle=360.0),
-        IR.polar_pocket("rollers_a", radius=6.0, length=16.0, mount_r=30.0, z=-12.0, count=4, phase=0.0),
-        IR.polar_pocket("rollers_b", radius=6.0, length=16.0, mount_r=30.0, z=-1.0, count=4, phase=45.0),
-        # --- servo-horn mount on the boss end (bottom, z=-27.5) ---
+        # roller cavities: Ø20 rollers + clearance (r11), 30 mm long, at MOUNT_R 25, rows z=±9.5 staggered
+        IR.polar_pocket("rollers_a", radius=11.0, length=32.0, mount_r=25.0, z=-9.5, count=4, phase=0.0),
+        IR.polar_pocket("rollers_b", radius=11.0, length=32.0, mount_r=25.0, z=9.5, count=4, phase=45.0),
+        # --- servo-horn mount on the boss end (bottom, z=-28) ---
         IR.sketch("horn_recess_sk", circles=[(0, 0, 10.25)], on={"face_of": "body", "side": "bottom"}),
         IR.pocket("horn_recess", "horn_recess_sk", through=False, length=3.0),   # Ø20.5 horn seat
         IR.sketch("hub_bore_sk", circles=[(0, 0, 4.6)], on={"face_of": "body", "side": "bottom"}),
         IR.pocket("hub_bore", "hub_bore_sk", through=False, length=6.0),         # Ø9.2 clears the Ø9 hub
-        # back-access counterbore (from the disc back, z=+8): drop M3 screws in here so they only span
-        # the boss to the horn — not the whole wheel
+        # back-access counterbore (from the disc back, z=+20): short M3 screws
         IR.sketch("access_sk", circles=[(0, 0, 9.0)], on={"face_of": "body", "side": "top"}),
-        IR.pocket("access", "access_sk", through=False, length=24.0),            # Ø18 down to z=-16
+        IR.pocket("access", "access_sk", through=False, length=36.0),            # Ø18 down to z=-16
         IR.sketch("horn_bolts_sk", circles=[(x, y, 1.7) for x, y in bolts],
                   on={"face_of": "body", "side": "bottom"}),
         IR.pocket("horn_bolts", "horn_bolts_sk", through=True),                  # 4× M3, boss->access bore

@@ -14,8 +14,9 @@ import numpy as np
 from build123d import *
 
 sys.path.insert(0, os.path.dirname(__file__))
-from _omni import (BARREL_MAX, HALF_L, HORN_BC_D, HORN_N, HORN_SCREW, HUB_BORE,  # noqa: E402
-                   HUB_PIN_BORE, MOUNT_R, N_ROLLERS, PIN_SNAP_MOUTH, R_EFF, ROLLER_SAMPLES,
+from _omni import (BACK_ACCESS_D, BARREL_MAX, HALF_L, HORN_BC_D, HORN_N, HORN_RECESS_D,  # noqa: E402
+                   HORN_RECESS_DEPTH, HORN_SCREW, HUB_BORE, HUB_PIN_BORE, MOUNT_BOSS_D,
+                   MOUNT_BOSS_H, MOUNT_R, N_ROLLERS, PIN_SNAP_MOUTH, R_EFF, ROLLER_SAMPLES,
                    ROW_Z, ROWS, rho, roller_center)
 
 CLR = 1.0                                  # roller spin clearance (pocket = barrel + CLR)
@@ -23,7 +24,7 @@ CLR = 1.0                                  # roller spin clearance (pocket = bar
 # radius hypot(MOUNT_R, HALF_L+2)) so there's material to cut the lip — but stay inside R_EFF so it
 # doesn't foul the rolling surface. Derive it from HALF_L so it scales with the roller length.
 CLEAR_R = min(R_EFF - 1.0, math.hypot(MOUNT_R, HALF_L + 3.0))
-FRAME_H = 2 * (ROW_Z + BARREL_MAX) + 4      # Z height: spans both rows of barrels
+FRAME_H = 2 * (ROW_Z + BARREL_MAX) + 1      # Z height: spans both rows of barrels (+1 face material)
 
 
 def _envelope_roller(clr=CLR):
@@ -49,11 +50,18 @@ def _build():
             (cx, cy, cz), deg = roller_center(i, row)
             hub -= Pos(cx, cy, cz) * Rot(0, 0, deg) * Rot(90, 0, 0) * cutter   # carve pocket
 
-    hub -= Cylinder(HUB_BORE / 2, FRAME_H + 2)         # drive bore
-    for k in range(HORN_N):                            # horn bolt circle
+    # --- STS3215 servo mount on the -Z (servo) face ---
+    zf = FRAME_H / 2                                    # -Z face at z = -zf
+    C, MN, MX = Align.CENTER, Align.MIN, Align.MAX
+    hub += Pos(0, 0, -zf) * Cylinder(MOUNT_BOSS_D / 2, MOUNT_BOSS_H, align=(C, C, MX))  # standoff boss
+    zboss = -zf - MOUNT_BOSS_H                          # boss end face (servo side)
+    hub -= Cylinder(HUB_BORE / 2, FRAME_H + MOUNT_BOSS_H + 2)          # drive bore thru hub + boss
+    hub -= Pos(0, 0, zboss) * Cylinder(HORN_RECESS_D / 2, HORN_RECESS_DEPTH, align=(C, C, MN))  # horn seat
+    hub -= Pos(0, 0, zf) * Cylinder(BACK_ACCESS_D / 2, FRAME_H - HORN_RECESS_DEPTH, align=(C, C, MX))  # back access
+    for k in range(HORN_N):                            # horn bolt circle: 4x M3, boss -> access bore
         a = 2 * math.pi * k / HORN_N
         hub -= Pos((HORN_BC_D / 2) * math.cos(a), (HORN_BC_D / 2) * math.sin(a), 0) * \
-            Cylinder(HORN_SCREW / 2, FRAME_H + 2)
+            Cylinder(HORN_SCREW / 2, FRAME_H + MOUNT_BOSS_H + 2)
     rad_out = R_EFF + 2 - MOUNT_R                       # throat reaches from the pin out past the OD
     big = 2 * R_EFF
     for row in range(ROWS):                            # a SNAP-FIT pin seat per roller
