@@ -19,9 +19,10 @@ from _omni import (BARREL_MAX, HALF_L, HORN_BC_D, HORN_N, HORN_SCREW, HUB_BORE, 
                    ROW_Z, ROWS, rho, roller_center)
 
 CLR = 1.0                                  # roller spin clearance (pocket = barrel + CLR)
-# blank radius: MUST reach well past the pitch circle so the tangent pins stay inside the
-# material long enough to cut a real snap lip (pin exits the blank at s=sqrt(CLEAR_R^2-MOUNT_R^2)).
-CLEAR_R = MOUNT_R + 5.0                     # +5 -> ~4.7mm of post depth per pin end (stays < R_EFF)
+# blank radius: MUST reach past the pin's outboard snap-lip (at tangential s ~ HALF_L+2, i.e. wheel
+# radius hypot(MOUNT_R, HALF_L+2)) so there's material to cut the lip — but stay inside R_EFF so it
+# doesn't foul the rolling surface. Derive it from HALF_L so it scales with the roller length.
+CLEAR_R = min(R_EFF - 1.0, math.hypot(MOUNT_R, HALF_L + 3.0))
 FRAME_H = 2 * (ROW_Z + BARREL_MAX) + 4      # Z height: spans both rows of barrels
 
 

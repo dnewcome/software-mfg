@@ -15,21 +15,25 @@ angular coverage half-angle >= 90/N degrees (see continuity()).
 """
 import math
 
-R_EFF = 30.0        # wheel effective radius (mm) -> 60 mm OD.        MEASURE
-N_ROLLERS = 5       # rollers PER ROW — count them on the real wheel. MEASURE
-MOUNT_R = 22.0      # roller-axis distance from wheel centre (pitch). MEASURE
-PIN_D = 3.0         # axle pin (3 mm dowel / M3)
+# FITTED to the XRP "Omni-Directional Kiwi Bot" wheel (omni-wheel-shell.step + omni-roller.stl).
+# Design closes on clean integers: a Ø70 wheel arc (R_EFF 35) with Ø20 barrel rollers (barrel_max
+# 10), so MOUNT_R = R_EFF - 10 = 25 (matches the measured pin pitch); rollers 30 mm long (HALF_L
+# 15); 4/row × 2 staggered rows. Coverage atan(15/25)=31deg > need 90/4=22.5deg -> continuous.
+# (Replaces the earlier OD60/10-roller photo wheel; see software-mfg/WHEELS.md.)
+R_EFF = 35.0        # wheel effective radius (mm) -> 70 mm OD.        MEASURE (Ø70 wheel arc)
+N_ROLLERS = 4       # rollers PER ROW — count them on the real wheel. MEASURE (2×4 = 8)
+MOUNT_R = 25.0      # roller-axis distance from wheel centre (pitch). = R_EFF - barrel_max (Ø20 roller)
+PIN_D = 3.0         # axle pin (3 mm dowel / M3); roller bore Ø3.15
 ROLLER_BORE = 3.4   # roller spins on the pin -> bore > pin
 HUB_PIN_BORE = 3.2  # round seat the pin snaps INTO (holds the pin; the roller spins on it)
 PIN_SNAP_MOUTH = 2.4  # radial entry throat, NARROWER than the pin -> lips flex, pin snaps past &
 #                       is retained. ~0.5mm snap interference (throat < PIN_D); inboard seat = the nest.
 ROLLER_SAMPLES = 28
 ROLLER_GAP_MM = 10.0  # tangential gap between rollers in a row -> room for the hub + spin clearance
-# Optional MEASURED roller half-length: some wheels' barrels overhang the axle pins, so the length
-# isn't the "rollers meet at the pitch angle" identity. Set to a number (mm) to override the derived
-# value; None uses FULL_HALF_L - ROLLER_GAP_MM/2. (The kiwi-v10 wheel's barrels overhang ~2.6x its
-# pin span, giving ~±28deg coverage — see scripts/omni_check.py's geometric continuity check.)
-ROLLER_HALF_L = None
+# MEASURED roller half-length: the XRP roller is 30 mm long (omni-roller.stl) -> HALF_L 15. Set to
+# a number to use the measured length; None derives it from FULL_HALF_L - ROLLER_GAP_MM/2 (the
+# "rollers meet at the pitch angle" identity). Measure it directly — barrels overhang the pin span.
+ROLLER_HALF_L = 15.0
 ROWS = 2              # two axially-offset, half-pitch-staggered rows -> continuous contact
 
 # drive interface to the STS3215 horn — from the ST-3215-C047 datasheet (§11 accessories horn):
